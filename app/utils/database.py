@@ -1,4 +1,5 @@
 from abc import ABC, ABCMeta, abstractmethod
+import json
 from typing import List
 import os
 from fastapi import HTTPException
@@ -80,28 +81,37 @@ class MySQLDatabase(DatabaseInterface):
 
     def save_student(self, student: Student):
         with self.connection.cursor() as cursor:
-            # SQLクエリーの実行
-            pass
+            sql = "INSERT INTO students (name, mail, gender, interest, description) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(sql, (student.name, student.mail, student.gender, json.dumps(student.interest), student.description))
+        self.connection.commit()
 
     def list_students(self) -> List[Student]:
         with self.connection.cursor() as cursor:
-            # SQLクエリーの実行
-            pass
+            cursor.execute("SELECT * FROM students")
+            result = cursor.fetchall()
+            return [Student(**data) for data in result]
 
     def get_student(self, student_id: int) -> Student:
         with self.connection.cursor() as cursor:
-            # SQLクエリーの実行
-            pass
+            cursor.execute("SELECT * FROM students WHERE id = %s", (student_id,))
+            result = cursor.fetchone()
+            if result:
+                return Student(**result)
+            else:
+                raise HTTPException(status_code=404, detail="Student not found")
+
 
     def update_student(self, student_id: int, student: Student):
         with self.connection.cursor() as cursor:
-            # SQLクエリーの実行
-            pass
+            sql = "UPDATE students SET name = %s, mail = %s, gender = %s, interest = %s, description = %s WHERE id = %s"
+            cursor.execute(sql, (student.name, student.mail, student.gender, json.dumps(student.interest), student.description, student_id))
+        self.connection.commit()
 
     def delete_student(self, student_id: int):
         with self.connection.cursor() as cursor:
-            # SQLクエリーの実行
-            pass
+            cursor.execute("DELETE FROM students WHERE id = %s", (student_id,))
+        self.connection.commit()
+
 
     def __del__(self):
         self.connection.close()
