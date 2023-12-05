@@ -1,44 +1,32 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends
+from utils.database import DatabaseInterface
 from models.student import Student
-import json
+from typing import List
+from dependencies import get_db
 
 router = APIRouter()
+
+from fastapi import APIRouter, HTTPException
 students_db = {}
 
 @router.post("", response_model=Student)
-async def create_student(student: Student):
-    student_id = len(students_db) + 1
-    student.id = student_id
-    students_db[student_id] = student
+async def create_student(student: Student, db: DatabaseInterface = Depends(get_db)) -> Student:
+    db.save_student(student)
+    print(db.students)
     return student
 
-@router.get("")
-async def create_student():
-    res = students_db
-    return res
+@router.get("", response_model=List[Student])
+async def list_student(db: DatabaseInterface = Depends(get_db)) -> List[Student]:
+    return db.list_students()
 
 @router.get("/{student_id}", response_model=Student)
-async def get_student(student_id: int):
-    if student_id not in students_db:
-        raise HTTPException(status_code=404, detail="Student not found")
-    return students_db[student_id]
+async def get_student(student_id: int, db: DatabaseInterface = Depends(get_db)) -> Student:
+    return db.get_student(student_id)
 
 @router.put("/{student_id}", response_model=Student)
-async def update_student(student_id: int, student: Student):
-    if student_id not in students_db:
-        raise HTTPException(status_code=404, detail="Student not found")
-    updated_student = students_db[student_id]
-    updated_student.name = student.name
-    updated_student.registration_number = student.registration_number
-    updated_student.email = student.email
-    # 他の属性が更新される場合はここに追加
-    students_db[student_id] = updated_student
-    return updated_student
+async def update_student(student_id: int, student: Student, db: DatabaseInterface = Depends(get_db)) -> Student:    
+    return db.update_student(student_id, student)
 
 @router.delete("/{student_id}", response_model=Student)
-async def delete_student(student_id: int):
-    if student_id not in students_db:
-        raise HTTPException(status_code=404, detail="Student not found")
-    deleted_student = students_db.pop(student_id)
-    return deleted_student
-
+async def delete_student(student_id: int, db:DatabaseInterface = Depends(get_db)) -> Student:
+    return db.delete_student(student_id)

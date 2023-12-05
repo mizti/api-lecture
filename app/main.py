@@ -1,12 +1,21 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from routes import student_routes #, lecture_routes, attendance_routes
+#from utils.database import MemoryDatabase, MySQLDatabase
+#import os
+from dependencies import get_db
 
-app = FastAPI()
+app = FastAPI(debug=True)
 
-app.include_router(student_routes.router, prefix="/students", tags=["students"])
+app.include_router(
+    student_routes.router,
+    prefix="/students",
+    tags=["students"],
+    dependencies=[Depends(get_db)]
+)
 
 @app.get("/hello")
 async def hello():
+    print("here is hello")
     return "Hello!"
 
 # app.include_router(lecture_routes.router, prefix="/lectures", tags=["lectures"])
