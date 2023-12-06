@@ -66,3 +66,49 @@ curl http://127.0.0.1:8000/students/2
 ```
 {"id":2,"name":"John Doe","mail":"johndoe@example.com","gender":"Male","interest":["Science","Technology"],"description":"Hello Everyone!"}
 ```
+# App Serviceへのデプロイ
+
+## App Serviceの構築
+
+* ログイン
+
+```bash
+az login
+```
+
+* リソースグループの作成
+```bash
+az group create --name myResourceGroup --location japaneast
+```
+
+* App Serviceプランを作成
+```bash
+az appservice plan create --name yourappname --resource-group myResourceGroup --sku B1 --is-linux
+```
+
+* Webアプリの作成
+```bash
+az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name lecture-api --runtime "PYTHON:3.12" --deployment-local-git
+```
+
+* スタートアップコマンドの設定
+設定 > 構成 > 全般設定 > スタックの設定 > スタートアップコマンドに
+```bash
+pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0
+```
+と設定を行います。
+
+
+* Webアプリのデプロイ
+以下のコマンドはappディレクトリで実行します
+```bash
+az webapp up --name lecture-api --runtime PYTHON:3.12 --sku B1 --location japaneast --resource-group myResourceGroup --plan myAppServicePlan
+```
+このコマンドはカレントディレクトリの内容をアップロードしてWebAppを作成します（既にある場合は更新します）。
+
+ログを見たい場合には
+```bash
+az webapp up --name lecture-api --runtime PYTHON:3.12 --sku B1 --location japaneast --resource-group myResourceGroup --plan myAppServicePlan --logs
+```
+とlogsオプションを指定してください。（デプロイが完了するまで2-3分程度掛かります。）
