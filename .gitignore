@@ -162,3 +162,5 @@ cython_debug/
 ######################
 temp/*
 .python-version
+certs/*
+app/certs

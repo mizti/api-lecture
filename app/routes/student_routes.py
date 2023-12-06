@@ -12,7 +12,6 @@ students_db = {}
 @router.post("", response_model=Student)
 async def create_student(student: Student, db: DatabaseInterface = Depends(get_db)) -> Student:
     db.save_student(student)
-    print(db.students)
     return student
 
 @router.get("", response_model=List[Student])

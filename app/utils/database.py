@@ -34,11 +34,11 @@ class DatabaseInterface(metaclass=SingletonMeta):
     @abstractmethod
     def delete_student(self, student_id: int):
         pass
-
 class MemoryDatabase(DatabaseInterface):
     def __init__(self):
+        print("MemoryDatabase init")
         self.students = {}
-
+    
     def save_student(self, student: Student):
         # student id is max id in students + 1
         if len(self.students) == 0:
@@ -70,49 +70,54 @@ class MemoryDatabase(DatabaseInterface):
 
 class MySQLDatabase(DatabaseInterface):
     def __init__(self):
+        print("MySQLDatabase init")
         self.connection = pymysql.connect(
             host=os.getenv('MYSQL_HOST'),
             user=os.getenv('MYSQL_USER'),
             password=os.getenv('MYSQL_PASSWORD'),
             db=os.getenv('MYSQL_DB'),
             charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor
+            cursorclass=pymysql.cursors.DictCursor,
+            ssl={'ca': 'certs/DigiCertGlobalRootCA.crt.pem'}
         )
 
     def save_student(self, student: Student):
         with self.connection.cursor() as cursor:
-            sql = "INSERT INTO students (name, mail, gender, interest, description) VALUES (%s, %s, %s, %s, %s)"
+            sql = "INSERT INTO student (name, mail, gender, interest, description) VALUES (%s, %s, %s, %s, %s)"
             cursor.execute(sql, (student.name, student.mail, student.gender, json.dumps(student.interest), student.description))
         self.connection.commit()
 
     def list_students(self) -> List[Student]:
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM students")
+            cursor.execute("SELECT * FROM student")
             result = cursor.fetchall()
+            for row in result:
+                row['interest'] = json.loads(row['interest'])
+            
             return [Student(**data) for data in result]
 
     def get_student(self, student_id: int) -> Student:
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM students WHERE id = %s", (student_id,))
+            cursor.execute("SELECT * FROM student WHERE id = %s", (student_id,))
             result = cursor.fetchone()
             if result:
+                result['interest'] = json.loads(result['interest'])
                 return Student(**result)
             else:
                 raise HTTPException(status_code=404, detail="Student not found")
 
-
     def update_student(self, student_id: int, student: Student):
         with self.connection.cursor() as cursor:
-            sql = "UPDATE students SET name = %s, mail = %s, gender = %s, interest = %s, description = %s WHERE id = %s"
+            sql = "UPDATE student SET name = %s, mail = %s, gender = %s, interest = %s, description = %s WHERE id = %s"
             cursor.execute(sql, (student.name, student.mail, student.gender, json.dumps(student.interest), student.description, student_id))
         self.connection.commit()
 
     def delete_student(self, student_id: int):
         with self.connection.cursor() as cursor:
-            cursor.execute("DELETE FROM students WHERE id = %s", (student_id,))
+            student = self.get_student(student_id)
+            cursor.execute("DELETE FROM student WHERE id = %s", (student_id,))
         self.connection.commit()
-
+        return student
 
     def __del__(self):
         self.connection.close()
-
