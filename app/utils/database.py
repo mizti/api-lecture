@@ -4,8 +4,7 @@ from typing import List, Type,TypeVar, Generic, cast
 import os
 from fastapi import HTTPException
 import pymysql
-from models.student import BaseDBModel, Student # 仮に学生データモデルがこのように定義されていると仮定
-from pydantic import BaseModel
+from models.model_base import BaseDBModel
 
 class SingletonMeta(ABCMeta):
     _instances = {}
@@ -85,15 +84,34 @@ class MySQLDatabase(DatabaseInterface, Generic[T]):
             #ssl={'ca': 'certs/DigiCertGlobalRootCA.crt.pem'}
         )
 
+    # def save_item(self, item: T) -> T:
+    #     with self.connection.cursor() as cursor:
+    #         sql = "INSERT INTO {table_name} (name, mail, gender, interest, description) VALUES (%s, %s, %s, %s, %s)".format(table_name=self.model_cls.table_name())
+    #         cursor.execute(sql, (item.name, item.mail, item.gender, json.dumps(item.interest), item.description))
+    #     self.connection.commit()
+        
     def save_item(self, item: T) -> T:
         with self.connection.cursor() as cursor:
-            sql = "INSERT INTO student (name, mail, gender, interest, description) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(sql, (item.name, item.mail, item.gender, json.dumps(item.interest), item.description))
+            sql_insert = "INSERT INTO {table_name} (name, mail, gender, interest, description) VALUES (%s, %s, %s, %s, %s)".format(table_name=self.model_cls.table_name())
+            cursor.execute(sql_insert, (item.name, item.mail, item.gender, json.dumps(item.interest), item.description))
+            
+            # 最後に挿入されたIDを取得
+            sql_last_id = "SELECT LAST_INSERT_ID()"
+            cursor.execute(sql_last_id)
+            result = cursor.fetchone()
+            if result:
+                last_id = result[0] if isinstance(result, tuple) else result['LAST_INSERT_ID()']
+            else:
+                raise Exception("Failed to retrieve the last inserted ID.")
+
         self.connection.commit()
+
+        item.id = last_id
+        return item
 
     def list_items(self) -> List[T]:
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM student")
+            cursor.execute("SELECT * FROM {table_name}".format(table_name=self.model_cls.table_name()))
             result = cursor.fetchall()
             return [self.model_cls(**self._process_row(row)) for row in result]
 
@@ -103,24 +121,24 @@ class MySQLDatabase(DatabaseInterface, Generic[T]):
 
     def get_item(self, item_id: int) -> T:
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM student WHERE id = %s", (item_id,))
+            cursor.execute("SELECT * FROM {table_name} WHERE id = %s", (item_id,)).format(table_name=self.model_cls.table_name())
             result = cursor.fetchone()
             if result:
                 result['interest'] = json.loads(result['interest'])
                 return self.model_cls(**result)
             else:
-                raise HTTPException(status_code=404, detail="Student not found")
+                raise HTTPException(status_code=404, detail="{table_name} not found")
 
     def update_item(self, item_id: int, item: T) -> T:
         with self.connection.cursor() as cursor:
-            sql = "UPDATE student SET name = %s, mail = %s, gender = %s, interest = %s, description = %s WHERE id = %s"
+            sql = "UPDATE {table_name} SET name = %s, mail = %s, gender = %s, interest = %s, description = %s WHERE id = %s".format(table_name=self.model_cls.table_name())
             cursor.execute(sql, (item.name, item.mail, item.gender, json.dumps(item.interest), item.description, item_id))
         self.connection.commit()
 
     def delete_item(self, item_id: int) -> T:
         with self.connection.cursor() as cursor:
             item = self.get_item(item_id)
-            cursor.execute("DELETE FROM student WHERE id = %s", (item_id,))
+            cursor.execute("DELETE FROM {table_name} WHERE id = %s".format(table_name=self.model_cls.table_name()), (item_id,))
         self.connection.commit()
         return item
 
