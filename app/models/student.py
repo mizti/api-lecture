@@ -7,7 +7,10 @@ class GenderEnum(str, Enum):
     female = "Female"
     other = "Other"
 
-class Student(BaseModel):
+class BaseDBModel(BaseModel):
+    id: int | None = None
+
+class Student(BaseDBModel):
     id: int | None = None
     name: str
     mail: str

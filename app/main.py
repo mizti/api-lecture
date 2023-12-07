@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from routes import student_routes #, lecture_routes, attendance_routes
 #from utils.database import MemoryDatabase, MySQLDatabase
 #import os
-from dependencies import get_db
+from dependencies import get_db, get_student_db
 
 app = FastAPI(debug=True)
 
@@ -10,7 +10,7 @@ app.include_router(
     student_routes.router,
     prefix="/students",
     tags=["students"],
-    dependencies=[Depends(get_db)]
+    dependencies=[Depends(get_student_db)]
 )
 
 @app.get("/hello")
