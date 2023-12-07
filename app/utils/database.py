@@ -34,6 +34,7 @@ class DatabaseInterface(metaclass=SingletonMeta):
     @abstractmethod
     def delete_student(self, student_id: int):
         pass
+
 class MemoryDatabase(DatabaseInterface):
     def __init__(self):
         print("MemoryDatabase init")

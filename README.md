@@ -4,15 +4,21 @@ Fast APIでAPIを作成しデプロイする簡単なサンプル
 # 必要パッケージのインストール
 
 ```basha
-pip install -r requirements.txt
+pip install -r app/requirements.txt
 ```
 
 # 動かし方(ローカル)
 
+
+## 環境変数の設定
+```bash
+export PYTHONPATH=app:$PYTHONPATH
+```
+appをPYTHONPATHに入れることでルートディレクトリからuvicornを起動してもモジュール参照が失敗しないようにします。
+
 ## 起動
 ```bash
-cd app
-uvicorn main:app --reloa
+uvicorn app.main:app --reload
 ```
 
 ## 動作確認
@@ -94,21 +100,57 @@ az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name
 * スタートアップコマンドの設定
 設定 > 構成 > 全般設定 > スタックの設定 > スタートアップコマンドに
 ```bash
-pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0
+export PYTHONPATH=app:$PYTHONPATH
+pip install -r app/requirements.txt
+python -m uvicorn app.main:app --host 0.0.0.0
 ```
 と設定を行います。
 
 
 * Webアプリのデプロイ
-以下のコマンドはappディレクトリで実行します
 ```bash
 az webapp up --name lecture-api --runtime PYTHON:3.12 --sku B1 --location japaneast --resource-group myResourceGroup --plan myAppServicePlan
 ```
 このコマンドはカレントディレクトリの内容をアップロードしてWebAppを作成します（既にある場合は更新します）。
+（プロジェクトのルートディレクトリで実行してください。）
+
 
 ログを見たい場合には
 ```bash
 az webapp up --name lecture-api --runtime PYTHON:3.12 --sku B1 --location japaneast --resource-group myResourceGroup --plan myAppServicePlan --logs
 ```
-とlogsオプションを指定してください。（デプロイが完了するまで2-3分程度掛かります。）
+とlogsオプションを指定してください。
+
+（なお、デプロイが完了するまで2-3分程度掛かります。
+https://<app-name>.azurewebsites.net/hello
+にアクセスして動作状況を確認してください）
+
+# MySQLのデプロイ
+
+
+# App ServiceからMySQLへの接続
+
+このプログラムはMYSQL_HOSTが設定されている場合にはメモリ上ではなくMySQLにデータを格納するストアクラスを用いる設計になっています。
+
+* 接続情報の設定
+.env.exampleを.envファイルにコピーし、デプロイしたMySQLへの接続内容を.envファイルに設定します。
+
+```bash
+cp .env.example .env
+vi .env (.envファイルを編集します)
+```
+
+* App Serviceのスタートアップコマンドを修正
+
+App Serviceでスタートアップコマンドを修正します
+```bash
+source .env
+pip install -r app/requirements.txt
+python -m uvicorn app.main:app --host 0.0.0.0
+```
+(export PYTHONPATH=app:$PYTHONPATH は.envに含まれています)
+
+再度デプロイを行います。（ルートディレクトリで実行してください）
+```bash
+az webapp up --name lecture-api --runtime PYTHON:3.12 --sku B1 --location japaneast --resource-group myResourceGroup --plan myAppServicePlan
+```
