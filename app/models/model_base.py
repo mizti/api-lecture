@@ -6,3 +6,7 @@ class BaseDBModel(BaseModel):
     @classmethod
     def table_name(cls):
         raise NotImplementedError("Subclasses should implement this method so that returns DB table name.")
+    
+    @classmethod
+    def columns(cls):
+        raise NotImplementedError("Subclasses should implement this method so that returns DB table columns.")
