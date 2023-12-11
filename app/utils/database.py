@@ -75,16 +75,30 @@ class MySQLDatabase(DatabaseInterface, Generic[T]):
     def __init__(self, model_cls: Type[T]):
         self.model_cls = model_cls
         print("MySQLDatabase init")
-        self.connection = pymysql.connect(
-            host=os.getenv('MYSQL_HOST'),
-            user=os.getenv('MYSQL_USER'),
-            password=os.getenv('MYSQL_PASSWORD'),
-            db=os.getenv('MYSQL_DB'),
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor,
-            #ssl={'ca': 'certs/DigiCertGlobalRootCA.crt.pem'}
-        )
-   
+
+        if os.getenv('USE_CERTS') == 'true':
+            print("use certs")
+            self.connection = pymysql.connect(
+                host=os.getenv('MYSQL_HOST'),
+                user=os.getenv('MYSQL_USER'),
+                password=os.getenv('MYSQL_PASSWORD'),
+                db=os.getenv('MYSQL_DB'),
+                charset='utf8mb4',
+                cursorclass=pymysql.cursors.DictCursor,
+                ssl={'ca': 'certs/DigiCertGlobalRootCA.crt.pem'}
+            )
+        else:
+            print("not use certs")
+            self.connection = pymysql.connect(
+                host=os.getenv('MYSQL_HOST'),
+                user=os.getenv('MYSQL_USER'),
+                password=os.getenv('MYSQL_PASSWORD'),
+                db=os.getenv('MYSQL_DB'),
+                charset='utf8mb4',
+                cursorclass=pymysql.cursors.DictCursor,
+                #ssl={'ca': 'certs/DigiCertGlobalRootCA.crt.pem'}
+            )
+    
     def save_item(self, item: T) -> T:
         with self.connection.cursor() as cursor:
             # model_cls を使用してテーブル名を取得
