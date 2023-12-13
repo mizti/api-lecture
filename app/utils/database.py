@@ -148,7 +148,7 @@ class MySQLDatabase(DatabaseInterface, Generic[T]):
                 result['interest'] = json.loads(result['interest'])
                 return self.model_cls(**result)
             else:
-                raise HTTPException(status_code=404, detail="{table_name} not found")
+                raise HTTPException(status_code=404, detail="{table_name} not found".format(table_name=self.model_cls.table_name()))
 
     #def update_item(self, item_id: int, update_data: T) -> T:
     def update_item(self, item_id: int, update_data: T) -> T:
