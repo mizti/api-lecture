@@ -6,6 +6,9 @@ on:
       - main  # デプロイするブランチを指定
   workflow_dispatch:
 
+permissions:
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
