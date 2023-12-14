@@ -30,6 +30,10 @@ jobs:
           az group list
           pwd
 
+    - name: 'variable test'
+      run: |
+          echo ${{ env.RESOURCE_GROUP }}
+
     - name: 'Create App Service Plan'
       run: |
         az appservice plan create --name ${{ env.SERVICE_PLAN }} --resource-group ${{ env.RESOURCE_GROUP }} --location japaneast --sku B1 --is-linux
