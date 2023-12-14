@@ -7,8 +7,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
-
+    id-token: write
+    contents: read
+    
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -28,3 +29,19 @@ jobs:
           az account show
           az group list
           pwd
+
+    - name: 'Create App Service Plan'
+      run: |
+        az appservice plan create --name ${{ env.SERVICE_PLAN }} --resource-group ${{ env.RESOURCE_GROUP }} --location japaneast --sku B1 --is-linux
+
+    - name: 'Create Web App'
+      run: |
+        az webapp create --resource-group ${{ env.RESOURCE_GROUP }} --plan ${{ env.SERVICE_PLAN }} --name ${{ env.APP_NAME }} --runtime "PYTHON|3.12"
+
+    - name: 'Deploy to Azure Web App'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.APP_NAME }}
+        slot-name: 'production'
+        package: '.'
+        #publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
