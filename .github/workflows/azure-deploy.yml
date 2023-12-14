@@ -30,13 +30,17 @@ jobs:
           az group list
           pwd
 
-    - name: 'Create App Service Plan'
+    - name: 'Decode Cert file'
       run: |
-        az appservice plan create --name ${{ vars.SERVICE_PLAN }} --resource-group ${{ vars.RESOURCE_GROUP }} --location japaneast --sku B1 --is-linux
+        mkdir -p certs && echo "${{ secrets.CERT }}" > certs/DigiCertGlobalRootCA.crt.pem
 
-    - name: 'Create Web App'
-      run: |
-        az webapp create --resource-group ${{ vars.RESOURCE_GROUP }} --plan ${{ vars.SERVICE_PLAN }} --name ${{ vars.APP_NAME }} --runtime "PYTHON|3.12"
+    # - name: 'Create App Service Plan'
+    #   run: |
+    #     az appservice plan create --name ${{ vars.SERVICE_PLAN }} --resource-group ${{ vars.RESOURCE_GROUP }} --location japaneast --sku B1 --is-linux
+
+    # - name: 'Create Web App'
+    #   run: |
+    #     az webapp create --resource-group ${{ vars.RESOURCE_GROUP }} --plan ${{ vars.SERVICE_PLAN }} --name ${{ vars.APP_NAME }} --runtime "PYTHON|3.12"
 
     - name: 'Deploy to Azure Web App'
       uses: azure/webapps-deploy@v2
