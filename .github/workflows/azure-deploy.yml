@@ -32,7 +32,12 @@ jobs:
 
     - name: 'variable test'
       run: |
-          echo "Resource Group: $RESOURCE_GROUP"
+          echo "Resource Group: $APP_NAME"
+          echo $APP_NAME
+          echo ${{ env.APP_NAME }}
+          echo "Resource Group: $APP_NAM2"
+          echo $APP_NAME2
+          echo ${{ env.APP_NAME2 }}
 
     - name: 'Create App Service Plan'
       run: |
