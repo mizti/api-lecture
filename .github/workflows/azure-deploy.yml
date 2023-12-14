@@ -34,10 +34,10 @@ jobs:
       run: |
           echo "Resource Group: $APP_NAME"
           echo $APP_NAME
-          echo ${{ env.APP_NAME }}
+          echo ${{ vars.APP_NAME }}
           echo "Resource Group: $APP_NAM2"
           echo $APP_NAME2
-          echo ${{ env.APP_NAME2 }}
+          echo ${{ vars.APP_NAME2 }}
           echo $AZURE_CLIENT_ID
           echo ${{ secrets.AZURE_CLIENT_ID }}
           echo $HOGE
