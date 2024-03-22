@@ -168,3 +168,5 @@ app/certs
 app/config
 config
 settings.json
+
+*-env
