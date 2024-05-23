@@ -9,7 +9,6 @@ pip install -r app/requirements.txt
 
 # 動かし方(ローカル)
 
-
 ## 環境変数の設定
 ```bash
 export PYTHONPATH=app:$PYTHONPATH
@@ -21,7 +20,13 @@ appをPYTHONPATHに入れることでルートディレクトリからuvicornを
 uvicorn app.main:app --reload
 ```
 
-## 動作確認
+# 動かし方(ローカルdocker-compose)
+
+```bash
+docker-compose up -d
+```
+
+# 動作確認
 
 * Hello APIの呼び出し
 ```bash
