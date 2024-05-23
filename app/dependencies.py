@@ -1,6 +1,6 @@
 from logging import Logger
 import os
-from app.models.student import BaseDBModel, Student
+from models.student import BaseDBModel, Student
 from utils.database import DatabaseInterface, MemoryDatabase, MySQLDatabase
 from typing import Type, TypeVar, Generic, Callable
 

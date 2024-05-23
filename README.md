@@ -16,14 +16,25 @@ export PYTHONPATH=app:$PYTHONPATH
 appをPYTHONPATHに入れることでルートディレクトリからuvicornを起動してもモジュール参照が失敗しないようにします。
 
 ## 起動
+（api-lecture直下で以下を実行する）
 ```bash
 uvicorn app.main:app --reload
 ```
 
-# 動かし方(ローカルdocker-compose)
-
+# 動かし方(ローカル/Docker)
+（api-lecture直下で以下を実行する）
+ビルド
 ```bash
-docker-compose up -d
+ docker build -t myfastapi ./app
+```
+ビルド時のデバッグを要する場合には
+```bash
+ docker build -t myfastapi ./app --progress=plain --no-cache
+```
+
+実行
+```bash
+docker run -p 80:80 myfastapi
 ```
 
 # 動作確認
