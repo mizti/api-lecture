@@ -36,6 +36,22 @@ uvicorn app.main:app --reload
 ```bash
 docker run -p 80:80 myfastapi
 ```
+(ローカルホストでotelcolが動作しており、サービスからアクセスする必要がある場合にはホストネットワークモードで動作させる)
+```bash
+docker run --network="host" myfastapi
+```
+
+OpenTelemetry Collectorのビルドと実行
+
+ビルド
+```bash
+docker build -t otelcol ./opentelemetry-collector
+```
+
+実行
+```bash
+docker run -p 4317:4317 -p 4318:4318 otelcol
+```
 
 # 動作確認
 

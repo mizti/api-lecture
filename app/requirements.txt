@@ -3,3 +3,8 @@ uvicorn
 gunicorn
 sqlalchemy
 pymysql
+
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-exporter-otlp
