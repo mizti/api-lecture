@@ -9,7 +9,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry import trace
+from opentelemetry import trace, metrics
 from opentelemetry.trace import StatusCode, Status
 
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
@@ -17,6 +17,20 @@ from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry._logs import set_logger_provider
 import logging
+
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import ConsoleMetricExporter, PeriodicExportingMetricReader
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+
+def init_metrics(meter):
+    # Recommendations counter
+    app_hello_counter = meter.create_counter(
+        'app_hello_counter', unit='helo', description="Counts the total number of given greetings"
+    )
+    rec_svc_metrics = {
+        "app_hello_counter": app_hello_counter,
+    }
+    return rec_svc_metrics
 
 # Open Telemetry Settings
 resource = Resource(attributes={"service.name": "fastapi-service"})
@@ -34,6 +48,15 @@ log_exporter = OTLPLogExporter(endpoint="localhost:4317", insecure=True)
 log_processor = BatchLogRecordProcessor(log_exporter)
 log_provider.add_log_record_processor(log_processor)
 logging_handler = LoggingHandler(level=logging.INFO)
+
+# OTLP Metrics Settings
+metric_reader1 = PeriodicExportingMetricReader(OTLPMetricExporter(endpoint="localhost:4317", insecure=True), export_interval_millis=5000)
+
+metric_reader2 = PeriodicExportingMetricReader(ConsoleMetricExporter(), export_interval_millis=5000)
+metrics_provider = MeterProvider(resource=resource, metric_readers=[metric_reader1, metric_reader2])
+metrics.set_meter_provider(metrics_provider)
+meter = metrics_provider.get_meter(__name__)
+rec_svc_metrics = init_metrics(meter)
 
 logging.getLogger().addHandler(logging_handler)
 logging.getLogger().setLevel(logging.INFO)
@@ -56,6 +79,7 @@ async def hello():
         span.add_event("start-processing hello")
 
         logging.info("Processing /hello request")
+        rec_svc_metrics["app_hello_counter"].add(1, {'greeting.type': 'hello'})
         print("here is hello")
         span.add_event("end-processing")
         span.set_status(Status(StatusCode.OK))
@@ -65,3 +89,4 @@ async def hello():
 # app.include_router(lecture_routes.router, prefix="/lectures", tags=["lectures"])
 
 # app.include_router(attendance_routes.router, prefix="/lectures/{lectureId}/students", tags=["attendances"])
+
