@@ -1,0 +1,8 @@
+FROM otel/opentelemetry-collector-contrib:latest
+
+# Install Azure Monitor exporter
+RUN mkdir -p /etc/otelcol/extensions && \
+    wget -O /etc/otelcol/extensions/azuremonitor.yaml https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/main/exporter/azuremonitorexporter/config.yaml
+
+# Set default config path
+ENV CONFIG_FILE=/etc/otelcol/config.yaml
