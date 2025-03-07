@@ -136,7 +136,9 @@ class MySQLDatabase(DatabaseInterface, Generic[T]):
             return [self.model_cls(**self._process_row(row)) for row in result]
         
     def _process_row(self, row):
-        row['interest'] = json.loads(row['interest'])
+        # Only process interest field if it exists
+        if 'interest' in row and row['interest'] is not None:
+            row['interest'] = json.loads(row['interest'])
         return row
 
     def get_item(self, item_id: int) -> T:
@@ -145,8 +147,7 @@ class MySQLDatabase(DatabaseInterface, Generic[T]):
             cursor.execute(query, (item_id,))
             result = cursor.fetchone() 
             if result:
-                result['interest'] = json.loads(result['interest'])
-                return self.model_cls(**result)
+                return self.model_cls(**self._process_row(result))
             else:
                 raise HTTPException(status_code=404, detail="{table_name} not found".format(table_name=self.model_cls.table_name()))
 
