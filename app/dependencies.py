@@ -1,6 +1,7 @@
 from logging import Logger
 import os
 from models.student import BaseDBModel, Student
+from models.lecture import Lecture
 from utils.database import DatabaseInterface, MemoryDatabase, MySQLDatabase
 from typing import Type, TypeVar, Generic, Callable
 
@@ -18,3 +19,6 @@ def get_db(model_cls: Type[T]) -> DatabaseInterface[T]:
 
 def get_student_db() -> DatabaseInterface[Student]:
     return get_db(Student)
+
+def get_lecture_db() -> DatabaseInterface[Lecture]:
+    return get_db(Lecture)
