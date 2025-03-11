@@ -15,6 +15,12 @@
 
 ## テスト環境のセットアップと実行
 
+### 0. Application Insights接続文字列の設定(Otional)
+Application Insightsにテレメトリを連携する場合には接続文字列をAPPLICATIONINSIGHTS_CONNECTION_STRINGに設定します。
+```bash
+export APPLICATIONINSIGHTS_CONNECTION_STRING="InstrumentationKey=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx;IngestionEndpoint=https://japaneast-1.in.applicationinsights.azure.com/;LiveEndpoint=https://japaneast.livediagnostics.monitor.azure.com/;ApplicationId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
 ### 1. テスト環境の起動
 
 テスト環境を起動するには、以下のコマンドを実行します：
